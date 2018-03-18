@@ -3,7 +3,7 @@ package coinex
 import (
 	"encoding/json"
 	"fmt"
-	. "github.com/nntaoli-project/GoEx"
+	. "github.com/SuperGod/GoEx"
 	"log"
 	"net/http"
 	"net/url"

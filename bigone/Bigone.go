@@ -2,7 +2,7 @@ package bigone
 
 import (
 	"fmt"
-	. "github.com/nntaoli-project/GoEx"
+	. "github.com/SuperGod/GoEx"
 	"net/http"
 
 	"log"
