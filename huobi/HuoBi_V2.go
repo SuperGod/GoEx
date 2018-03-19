@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	. "github.com/SuperGod/GoEx"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	. "github.com/SuperGod/GoEx"
 )
 
 type HuoBi_V2 struct {
@@ -31,6 +32,14 @@ func NewV2(httpClient *http.Client, accessKey, secretKey, clientId string) *HuoB
 }
 
 func (hbV2 *HuoBi_V2) GetAccountId() (string, error) {
+	return hbV2.GetAccountIdByType("spot", "")
+}
+
+func (hbV2 *HuoBi_V2) GetMarginAccountId(subType string) (string, error) {
+	return hbV2.GetAccountIdByType("margin", subType)
+}
+
+func (hbV2 *HuoBi_V2) GetAccountIdByType(accountType, subType string) (string, error) {
 	path := "/v1/account/accounts"
 	params := &url.Values{}
 	hbV2.buildPostForm("GET", path, params)
@@ -47,8 +56,34 @@ func (hbV2 *HuoBi_V2) GetAccountId() (string, error) {
 	}
 
 	data := respmap["data"].([]interface{})
-	accountIdMap := data[0].(map[string]interface{})
-	hbV2.accountId = fmt.Sprintf("%.f", accountIdMap["id"].(float64))
+	var accountIdMap map[string]interface{}
+	var temp interface{}
+	var ok bool
+	for _, v := range data {
+		accountIdMap, ok = v.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		temp, ok = accountIdMap["type"]
+		if !ok {
+			continue
+		}
+		if temp.(string) != accountType {
+			continue
+
+		}
+		if subType != "" {
+			temp, ok = accountIdMap["subtype"]
+			if !ok {
+				continue
+			}
+			if temp.(string) != subType {
+				continue
+			}
+		}
+
+		hbV2.accountId = fmt.Sprintf("%.f", accountIdMap["id"].(float64))
+	}
 
 	//log.Println(respmap)
 	return hbV2.accountId, nil
@@ -118,7 +153,7 @@ func (hbV2 *HuoBi_V2) placeOrder(amount, price string, pair CurrencyPair, orderT
 	params.Set("amount", amount)
 	params.Set("symbol", strings.ToLower(pair.ToSymbol("")))
 	params.Set("type", orderType)
-
+	fmt.Println(params)
 	switch orderType {
 	case "buy-limit", "sell-limit":
 		params.Set("price", price)
