@@ -28,6 +28,7 @@ func NewHuobiProMargin(client *http.Client, apikey, secretkey, subType string) (
 	if err != nil {
 		return
 	}
+	hbv2.isMargin = true
 	pro = &HuobiPro{hbv2}
 	return
 }

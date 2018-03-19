@@ -18,6 +18,7 @@ type HuoBi_V2 struct {
 	baseUrl,
 	accessKey,
 	secretKey string
+	isMargin bool
 }
 
 type response struct {
@@ -28,7 +29,7 @@ type response struct {
 }
 
 func NewV2(httpClient *http.Client, accessKey, secretKey, clientId string) *HuoBi_V2 {
-	return &HuoBi_V2{httpClient, clientId, "https://be.huobi.com", accessKey, secretKey}
+	return &HuoBi_V2{httpClient, clientId, "https://be.huobi.com", accessKey, secretKey, false}
 }
 
 func (hbV2 *HuoBi_V2) GetAccountId() (string, error) {
@@ -50,7 +51,7 @@ func (hbV2 *HuoBi_V2) GetAccountIdByType(accountType, subType string) (string, e
 	if err != nil {
 		return "", err
 	}
-	//log.Println(respmap)
+	// log.Println(respmap)
 	if respmap["status"].(string) != "ok" {
 		return "", errors.New(respmap["err-code"].(string))
 	}
@@ -153,7 +154,9 @@ func (hbV2 *HuoBi_V2) placeOrder(amount, price string, pair CurrencyPair, orderT
 	params.Set("amount", amount)
 	params.Set("symbol", strings.ToLower(pair.ToSymbol("")))
 	params.Set("type", orderType)
-	fmt.Println(params)
+	if hbV2.isMargin {
+		params.Set("source", "margin-api")
+	}
 	switch orderType {
 	case "buy-limit", "sell-limit":
 		params.Set("price", price)
