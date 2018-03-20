@@ -209,30 +209,28 @@ func (hbV2 *HuoBi_V2) LimitSell(amount, price string, currency CurrencyPair) (*O
 		Side:     SELL}, nil
 }
 
-func (hbV2 *HuoBi_V2) MarketBuy(amount, price string, currency CurrencyPair) (*Order, error) {
+func (hbV2 *HuoBi_V2) MarketBuy(amount, price string, currency CurrencyPair) (order *Order, err error) {
 	orderId, err := hbV2.placeOrder(amount, price, currency, "buy-market")
 	if err != nil {
 		return nil, err
 	}
-	return &Order{
-		Currency: currency,
-		OrderID:  ToInt(orderId),
-		Amount:   ToFloat64(amount),
-		Price:    ToFloat64(price),
-		Side:     BUY_MARKET}, nil
+	order, err = hbV2.GetOneOrder(orderId, currency)
+	if err == nil {
+		order.Side = BUY_MARKET
+	}
+	return
 }
 
-func (hbV2 *HuoBi_V2) MarketSell(amount, price string, currency CurrencyPair) (*Order, error) {
+func (hbV2 *HuoBi_V2) MarketSell(amount, price string, currency CurrencyPair) (order *Order, err error) {
 	orderId, err := hbV2.placeOrder(amount, price, currency, "sell-market")
 	if err != nil {
 		return nil, err
 	}
-	return &Order{
-		Currency: currency,
-		OrderID:  ToInt(orderId),
-		Amount:   ToFloat64(amount),
-		Price:    ToFloat64(price),
-		Side:     SELL_MARKET}, nil
+	order, err = hbV2.GetOneOrder(orderId, currency)
+	if err == nil {
+		order.Side = BUY_MARKET
+	}
+	return
 }
 
 func (hbV2 *HuoBi_V2) parseOrder(ordmap map[string]interface{}) Order {
